@@ -561,6 +561,11 @@
       root.dataset.rampApplied='1';
       if($('#autoPalette'))$('#autoPalette').checked=false;
       applyDefaultRamp();
+      // Palette Mapping is hidden in the simplified inspector. Segment colors
+      // must remain independently editable instead of being overwritten by the
+      // legacy global-palette sync on every render.
+      const applyPalette=$('#applyPalette');
+      if(applyPalette){applyPalette.checked=false;applyPalette.dispatchEvent(new Event('change',{bubbles:true}))}
     }
   }
   const history={past:[],future:[],current:null,pending:false,timer:0,restoring:false,armed:false};
@@ -626,6 +631,12 @@
   }
   function undoHistory(){if(!history.armed||history.pending||!history.past.length)return;const target=history.past.pop();history.future.push(history.current);restoreHistory(target)}
   function redoHistory(){if(!history.armed||history.pending||!history.future.length)return;const target=history.future.pop();history.past.push(history.current);restoreHistory(target)}
+  document.addEventListener('click',e=>{
+    if(e.target?.closest?.('#segColor,#segments .segitem > .sw')){
+      const applyPalette=$('#applyPalette');
+      if(applyPalette?.checked){applyPalette.checked=false;applyPalette.dispatchEvent(new Event('change',{bubbles:true}))}
+    }
+  },true);
   document.addEventListener('input',captureHistory,true);document.addEventListener('change',captureHistory,true);document.addEventListener('click',captureHistory,true);document.addEventListener('pointerdown',captureHistory,true);
   document.addEventListener('keydown',e=>{
     const mod=e.ctrlKey||e.metaKey;
