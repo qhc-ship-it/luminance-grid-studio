@@ -564,6 +564,17 @@
   function hidePaletteMapping(){
     root.querySelectorAll('details').forEach(d=>{if((d.querySelector('summary')?.textContent||'').trim()==='Palette Mapping')d.style.display='none'});
   }
+  function initializeElementDefaults(){
+    if(root.dataset.elementDefaultsApplied==='1')return;
+    const weight=$('#gFontWeight');
+    if(weight&&!weight.querySelector('option[value="300"]')){const o=document.createElement('option');o.value='300';o.textContent='Light';weight.prepend(o)}
+    if(weight){weight.value='300';weight.dispatchEvent(new Event('change',{bubbles:true}))}
+    const globalScale=$('#gScale');if(globalScale){globalScale.value='72';globalScale.dispatchEvent(new Event('input',{bubbles:true}))}
+    const swatches=[...root.querySelectorAll('#segments .segitem > .sw')];
+    swatches.forEach((sw)=>{sw.click();const custom=$('#segModes button[data-m="custom"]');if(custom&&!custom.classList.contains('on'))custom.click();const segmentScale=$('#sScale');if(segmentScale){segmentScale.value='72';segmentScale.dispatchEvent(new Event('input',{bubbles:true}))}});
+    swatches[0]?.click();
+    root.dataset.elementDefaultsApplied='1';
+  }
   function initializeLuminanceDefaults(){
     hidePaletteMapping();
     if(segmentField&&!root.dataset.countHidden){
@@ -581,6 +592,7 @@
       // legacy global-palette sync on every render.
       const applyPalette=$('#applyPalette');
       if(applyPalette){applyPalette.checked=false;applyPalette.dispatchEvent(new Event('change',{bubbles:true}))}
+      requestAnimationFrame(initializeElementDefaults);
     }
   }
   const history={past:[],future:[],current:null,pending:false,timer:0,restoring:false,armed:false};
