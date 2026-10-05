@@ -366,6 +366,21 @@
         const size=(this.font.match(/([\d.]+)px/)||[])[1]||'12';
         this.font=(weightField?.value||'500')+' '+size+'px "'+safeFontName(field.value)+'", system-ui, sans-serif';
       }
+      // Keep text placement sparse even when a density slider is high. The
+      // renderer already calls fillText only for cells belonging to a segment;
+      // this mask adds deterministic randomness and a small spacing guard so
+      // characters do not tile every neighboring cell.
+      if(this.canvas?.id==='view'&&typeof this.getTransform==='function'){
+        const tr=this.getTransform(),x=tr.e||0,y=tr.f||0;
+        const key=Math.floor(x/8)+'|'+Math.floor(y/8)+'|'+String(text);
+        let hash=2166136261;for(let i=0;i<key.length;i++){hash^=key.charCodeAt(i);hash=Math.imul(hash,16777619)}
+        // Keep roughly 42% of the already density-filtered cells; the result
+        // is visibly random without turning the whole segment into a texture.
+        if(((hash>>>0)%100)/100>0.42)return;
+        const last=this.__luminanceLastTextPoint,gap=Math.max(9,(window.devicePixelRatio||1)*10);
+        if(last&&Math.hypot(x-last.x,y-last.y)<gap)return;
+        this.__luminanceLastTextPoint={x,y};
+      }
       return nativeFillText.call(this,text,...args);
     };
     CanvasRenderingContext2D.prototype.__luminanceFontBridge=true;
