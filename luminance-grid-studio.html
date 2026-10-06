@@ -46,7 +46,7 @@
   linear-gradient(45deg,rgba(255,255,255,.012) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.012) 75%),
   linear-gradient(45deg,rgba(255,255,255,.012) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.012) 75%),#111216;
   background-size:auto,24px 24px,24px 24px;background-position:0 0,0 0,12px 12px;overflow:hidden}
-#lgstudio #view{max-width:calc(100% - 72px);max-height:calc(100% - 112px);background:#f6f4ef;box-shadow:0 22px 64px rgba(0,0,0,.48),0 0 0 1px rgba(255,255,255,.12);image-rendering:auto}
+#lgstudio #view{max-width:none;max-height:none;width:auto;height:auto;background:#f6f4ef;box-shadow:0 22px 64px rgba(0,0,0,.48),0 0 0 1px rgba(255,255,255,.12);image-rendering:auto}
 #lgstudio .viewTabs{top:12px;left:12px;height:30px;padding:2px;gap:1px;border:1px solid var(--line);border-radius:7px;background:#202125;box-shadow:0 5px 18px rgba(0,0,0,.22)}
 #lgstudio .viewTabs button{min-width:72px;min-height:24px;height:24px;padding:3px 10px;border:0;border-radius:4px;color:var(--muted);font-size:11px}
 #lgstudio .viewTabs button.on{background:#3a3b40;color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.35)}
@@ -356,6 +356,17 @@
   function syncCanvasMeta(){
     const c=$('#view'),label=$('#canvasSize');
     if(c&&label)label.textContent=Math.round(c.width/(window.devicePixelRatio||1))+' × '+Math.round(c.height/(window.devicePixelRatio||1));
+  }
+  function fitViewCanvas(){
+    const c=$('#view'),stage=$('#stage');
+    if(!c||!stage||!c.width||!c.height)return;
+    const ratio=c.width/c.height;
+    const maxW=Math.min(760,Math.max(220,stage.clientWidth-20));
+    const maxH=Math.min(700,Math.max(280,stage.clientHeight-20));
+    let w=maxW,h=w/ratio;
+    if(h>maxH){h=maxH;w=h*ratio}
+    c.style.width=Math.round(w)+'px';
+    c.style.height=Math.round(h)+'px';
   }
   function syncPreview(){
     const active=$('.viewTabs button.on');
@@ -704,16 +715,16 @@
     else if((mod&&e.key==='y')||(mod&&e.shiftKey&&(e.key==='z'||e.key==='Z'))){e.preventDefault();redoHistory()}
   });
   setTimeout(()=>{history.current=historySnapshot();history.armed=true},1500);
-  root.addEventListener('input',()=>requestAnimationFrame(()=>{decorateRanges();syncCanvasMeta();ensureNoneGlobal()}));
-  root.addEventListener('click',()=>requestAnimationFrame(()=>{decorateRanges();syncCanvasMeta();syncPreview();restorePicker();ensureNoneGlobal()}));
+  root.addEventListener('input',()=>requestAnimationFrame(()=>{decorateRanges();fitViewCanvas();syncCanvasMeta();ensureNoneGlobal()}));
+  root.addEventListener('click',()=>requestAnimationFrame(()=>{decorateRanges();fitViewCanvas();syncCanvasMeta();syncPreview();restorePicker();ensureNoneGlobal()}));
   document.addEventListener('keydown',e=>{
     if((e.key==='i'||e.key==='I')&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))$('#inspect')?.click();
     if(e.key==='Escape'){if($('#picker').style.display!=='none')commitAndClosePicker(e);$('#exportModal').style.display='none'}
   });
   const observer=new MutationObserver(()=>requestAnimationFrame(()=>{decorateRanges();ensureNoneGlobal()}));
   observer.observe(root,{childList:true,subtree:true});
-  requestAnimationFrame(()=>{decorateRanges();syncCanvasMeta();syncPreview();refreshFontStatus();installFontTools();ensureNoneGlobal();initializeLuminanceDefaults()});
-  window.addEventListener('resize',()=>requestAnimationFrame(()=>{syncCanvasMeta();restorePicker()}));
+  requestAnimationFrame(()=>{decorateRanges();fitViewCanvas();syncCanvasMeta();syncPreview();refreshFontStatus();installFontTools();ensureNoneGlobal();initializeLuminanceDefaults()});
+  window.addEventListener('resize',()=>requestAnimationFrame(()=>{fitViewCanvas();syncCanvasMeta();restorePicker()}));
 })();
 </script>
 </div>
