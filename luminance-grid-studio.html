@@ -428,6 +428,21 @@
   }
   const picker=$('#picker'),pickerHead=$('#pickerHead'),pickerClose=$('#pickerClose'),app=$('.app');
   const cap=(v,min,max)=>Math.max(min,Math.min(max,v));
+  function syncLinkButton(button,grouped){
+    if(!button)return;
+    button.textContent=grouped?'🔗':'🔓';
+    button.title=grouped?'Linked text · click to unlink':'Independent text · click to link';
+    button.setAttribute('aria-label',grouped?'Unlink text':'Link text');
+    button.setAttribute('aria-pressed',String(!!grouped));
+  }
+  function syncLinkButtons(){
+    syncLinkButton($('#gLock'),$('#gLock')?.classList.contains('on'));
+    syncLinkButton($('#sLock'),$('#sLock')?.classList.contains('on'));
+  }
+  root.addEventListener('click',e=>{
+    if(e.target?.closest?.('#gLock,#sLock'))requestAnimationFrame(syncLinkButtons);
+  });
+  requestAnimationFrame(syncLinkButtons);
   const segmentField=$('#segCount');
   const changeSegmentCount=n=>{
     if(!segmentField)return;
